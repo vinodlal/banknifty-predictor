@@ -1,0 +1,65 @@
+name: Daily Bank Nifty fetch & analysis
+
+on:
+  schedule:
+    # 10:35 UTC = ~16:05 IST, after market close, Mon-Fri
+    - cron: "35 10 * * 1-5"
+  workflow_dispatch: {}
+
+concurrency:
+  group: daily-fetch
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r scripts/requirements.txt
+
+      - name: Generate Kite access token
+        working-directory: scripts
+        env:
+          KITE_API_KEY: ${{ secrets.KITE_API_KEY }}
+          KITE_API_SECRET: ${{ secrets.KITE_API_SECRET }}
+          KITE_USER_ID: ${{ secrets.KITE_USER_ID }}
+          KITE_PASSWORD: ${{ secrets.KITE_PASSWORD }}
+          KITE_TOTP_SECRET: ${{ secrets.KITE_TOTP_SECRET }}
+        run: python generate_token.py
+
+      - name: Fetch data
+        working-directory: scripts
+        env:
+          KITE_API_KEY: ${{ secrets.KITE_API_KEY }}
+        run: python fetch_data.py
+
+      - name: Run analysis engine
+        working-directory: scripts
+        run: python analysis_engine.py
+
+      - name: Run backtest / accuracy log
+        working-directory: scripts
+        run: python backtest.py
+
+      - name: Commit data
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          if git diff --cached --quiet; then
+            echo "No data changes to commit."
+          else
+            git commit -m "chore: daily data update ($(date -u +%Y-%m-%d))"
+            git push
+          fi
