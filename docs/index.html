@@ -27,6 +27,12 @@
     header { padding: 16px 16px 8px; }
     header h1 { font-size: 18px; margin: 0; letter-spacing: 0.3px; }
     header .sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
+    .head-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .refresh { background: var(--panel); border: 1px solid var(--line); color: var(--text);
+      width: 40px; height: 40px; border-radius: 10px; font-size: 20px; line-height: 1; flex: none; }
+    .refresh:active { background: var(--panel2); }
+    .refresh.spin { animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
     .tabbar { display: flex; gap: 6px; padding: 0 12px; margin-top: 10px; }
     .tabbar button {
       flex: 1; padding: 10px; border: 1px solid var(--line); background: var(--panel2);
@@ -132,8 +138,13 @@
 </head>
 <body>
   <header>
-    <h1>Bank Nifty Predictor</h1>
-    <div class="sub" id="subhead">Loading…</div>
+    <div class="head-row">
+      <div>
+        <h1>Bank Nifty Predictor</h1>
+        <div class="sub" id="subhead">Loading…</div>
+      </div>
+      <button id="refresh-btn" class="refresh" onclick="refreshData()" title="Reload latest data">↻</button>
+    </div>
   </header>
 
   <nav class="tabbar">

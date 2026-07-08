@@ -54,6 +54,22 @@ async function loadToday() {
   }
 }
 
+// Re-pull the latest published data (busts the cache). Does NOT contact Kite —
+// it reloads whatever was last committed/pushed to the repo.
+async function refreshData() {
+  const btn = document.getElementById("refresh-btn");
+  btn.classList.add("spin");
+  try {
+    await loadToday();
+    calMonth = null;            // force calendar reload next time it's opened
+    if (!document.getElementById("view-calendar").classList.contains("hidden")) {
+      await loadCalendar();
+    }
+  } finally {
+    setTimeout(() => btn.classList.remove("spin"), 400);
+  }
+}
+
 function corrBar(name, r20, r90) {
   if (r20 === null || r20 === undefined) {
     return `<div class="corr-row"><div class="corr-name">${name}</div>
