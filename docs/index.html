@@ -17,6 +17,8 @@
       --buy: #1fbf75; --sell: #ef4d5a; --neutral: #d8a417;
       --buy-dim: #123528; --sell-dim: #3a1620; --neutral-dim: #33290a;
       --corr-neg: #5aa9ff; --corr-pos: #f2b347;
+      --ma20: #f2b347; --ma50: #5aa9ff; --ma100: #b98cff; --ma200: #ff7a9c;
+      --up: #1fbf75; --down: #ef4d5a;
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body {
@@ -124,6 +126,35 @@
     .badge-sm.neutral { background: var(--neutral-dim); color: var(--neutral); border: 1px solid var(--neutral); }
     .rel-note { font-size: 11px; color: var(--muted); margin-top: 5px; }
 
+    /* Technical tab */
+    .tech-summary { font-size: 13px; margin-bottom: 4px; }
+    .tech-trend { font-weight: 700; font-size: 14px; margin-bottom: 8px; }
+    .ma-legend { display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0; font-size: 12px; }
+    .ma-legend span { display: inline-flex; align-items: center; gap: 5px; }
+    .ma-legend i { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
+    .ma-legend b { font-variant-numeric: tabular-nums; }
+    .chart-scroll { overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch;
+      border: 1px solid var(--line); border-radius: 10px; background: var(--panel2); }
+    .chart-scroll svg { display: block; }
+    .chart-hint { font-size: 10px; color: var(--muted); text-align: center; margin-top: 4px; }
+    .maval { display: flex; gap: 6px; margin-top: 10px; }
+    .maval .box { flex: 1; text-align: center; background: var(--panel2); border: 1px solid var(--line);
+      border-radius: 8px; padding: 6px 2px; }
+    .maval .box .k { font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px; }
+    .maval .box .v { font-size: 13px; font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; }
+    .maval .box.above { border-color: var(--up); } .maval .box.above .v { color: var(--up); }
+    .maval .box.below { border-color: var(--down); } .maval .box.below .v { color: var(--down); }
+    .plist { margin-top: 4px; }
+    .plist .prow { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+    .plist .prow:last-child { border-bottom: none; }
+    .plist .pdate { color: var(--muted); font-size: 11px; width: 52px; flex: none; }
+    .pdot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+    .pdot.bull { background: var(--up); } .pdot.bear { background: var(--down); } .pdot.neutral { background: var(--neutral); }
+    .lvl-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .lvl-chip { font-size: 12px; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+    .lvl-chip.support { color: var(--up); border-color: var(--up); background: var(--buy-dim); }
+    .lvl-chip.resistance { color: var(--down); border-color: var(--down); background: var(--sell-dim); }
+
     /* Calendar */
     .cal-summary { display: flex; gap: 8px; margin-bottom: 12px; }
     .cal-summary .stat { flex: 1; text-align: center; background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 4px; }
@@ -167,6 +198,7 @@
 
   <nav class="tabbar">
     <button id="tab-today" class="active" onclick="showTab('today')">Today</button>
+    <button id="tab-technical" onclick="showTab('technical')">Technical</button>
     <button id="tab-calendar" onclick="showTab('calendar')">Calendar</button>
   </nav>
 
@@ -174,6 +206,11 @@
     <section id="view-today">
       <div class="loading" id="today-loading">Loading recommendation…</div>
       <div id="today-content" class="hidden"></div>
+    </section>
+
+    <section id="view-technical" class="hidden">
+      <div class="loading" id="tech-loading">Loading chart…</div>
+      <div id="tech-content" class="hidden"></div>
     </section>
 
     <section id="view-calendar" class="hidden">

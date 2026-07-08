@@ -2,6 +2,8 @@
 
 const DATA_LATEST = "../data/latest.json";
 const DATA_BACKTEST = "../data/backtest_log.json";
+const DATA_TECH = "../data/technical.json";
+let techLoaded = false;
 
 let backtestByDate = {};   // "YYYY-MM-DD" -> row
 let calMonth = null;       // Date pointing at the 1st of the shown month
@@ -32,11 +34,12 @@ function badgeClass(rec) {
 // tab switching
 // ---------------------------------------------------------------------------
 function showTab(name) {
-  document.getElementById("view-today").classList.toggle("hidden", name !== "today");
-  document.getElementById("view-calendar").classList.toggle("hidden", name !== "calendar");
-  document.getElementById("tab-today").classList.toggle("active", name === "today");
-  document.getElementById("tab-calendar").classList.toggle("active", name === "calendar");
+  ["today", "technical", "calendar"].forEach((t) => {
+    document.getElementById("view-" + t).classList.toggle("hidden", name !== t);
+    document.getElementById("tab-" + t).classList.toggle("active", name === t);
+  });
   if (name === "calendar" && !calMonth) loadCalendar();
+  if (name === "technical" && !techLoaded) loadTechnical();
 }
 
 // ---------------------------------------------------------------------------
@@ -62,8 +65,12 @@ async function refreshData() {
   try {
     await loadToday();
     calMonth = null;            // force calendar reload next time it's opened
+    techLoaded = false;         // force technical reload next time it's opened
     if (!document.getElementById("view-calendar").classList.contains("hidden")) {
       await loadCalendar();
+    }
+    if (!document.getElementById("view-technical").classList.contains("hidden")) {
+      await loadTechnical();
     }
   } finally {
     setTimeout(() => btn.classList.remove("spin"), 400);
@@ -164,6 +171,129 @@ function renderToday(d) {
   c.innerHTML = html;
   c.classList.remove("hidden");
   document.getElementById("today-loading").classList.add("hidden");
+}
+
+// ---------------------------------------------------------------------------
+// Technical tab
+// ---------------------------------------------------------------------------
+const MA_COLOR = { 20: "var(--ma20)", 50: "var(--ma50)", 100: "var(--ma100)", 200: "var(--ma200)" };
+
+function scrollChartToEnd(tries) {
+  tries = tries || 0;
+  const sc = document.getElementById("chart-scroll");
+  if (sc && sc.scrollWidth > sc.clientWidth) {
+    sc.scrollLeft = sc.scrollWidth;
+  } else if (tries < 10) {
+    setTimeout(() => scrollChartToEnd(tries + 1), 60);
+  }
+}
+
+async function loadTechnical() {
+  try {
+    const res = await fetch(DATA_TECH, { cache: "no-store" });
+    if (!res.ok) throw new Error(res.status);
+    renderTechnical(await res.json());
+    techLoaded = true;
+  } catch (e) {
+    document.getElementById("tech-loading").textContent = "Chart data not available yet.";
+  }
+}
+
+function renderTechnical(t) {
+  const c = t.candles, s = t.ma_summary;
+  const step = 9, bodyW = 6, top = 8, plotH = 270, H = 320, padX = 4;
+  const plotW = padX * 2 + c.length * step;
+  let minP = Infinity, maxP = -Infinity;
+  c.forEach((d) => { minP = Math.min(minP, d.l); maxP = Math.max(maxP, d.h); });
+  const gap = (maxP - minP) * 0.04; minP -= gap; maxP += gap;
+  const y = (v) => top + (maxP - v) / (maxP - minP) * plotH;
+  const x = (i) => padX + i * step + step / 2;
+
+  let grid = "", yaxis = "";
+  for (let g = 0; g <= 5; g++) {
+    const val = minP + (maxP - minP) * g / 5, yy = y(val);
+    grid += `<line x1="0" y1="${yy.toFixed(1)}" x2="${plotW}" y2="${yy.toFixed(1)}" stroke="var(--line)" stroke-width="1"/>`;
+    yaxis += `<text x="44" y="${(yy + 3).toFixed(1)}" text-anchor="end" font-size="9" fill="var(--muted)">${Math.round(val).toLocaleString("en-IN")}</text>`;
+  }
+  let candles = "";
+  c.forEach((d, i) => {
+    const cx = x(i), col = d.c >= d.o ? "var(--up)" : "var(--down)";
+    const bt = Math.min(y(d.o), y(d.c)), bh = Math.max(1, Math.abs(y(d.c) - y(d.o)));
+    candles += `<line x1="${cx}" y1="${y(d.h).toFixed(1)}" x2="${cx}" y2="${y(d.l).toFixed(1)}" stroke="${col}" stroke-width="1"/>`;
+    candles += `<rect x="${(cx - bodyW / 2).toFixed(1)}" y="${bt.toFixed(1)}" width="${bodyW}" height="${bh.toFixed(1)}" fill="${col}"/>`;
+  });
+  let mas = "";
+  [20, 50, 100, 200].forEach((n) => {
+    const pts = [];
+    c.forEach((d, i) => { const v = d["ma" + n]; if (v != null) pts.push(`${x(i).toFixed(1)},${y(v).toFixed(1)}`); });
+    if (pts.length > 1) mas += `<polyline points="${pts.join(" ")}" fill="none" stroke="${MA_COLOR[n]}" stroke-width="1.6"/>`;
+  });
+  let srlines = "";
+  (t.levels || []).forEach((lv) => {
+    const yy = y(lv.price); if (yy < top || yy > top + plotH) return;
+    const col = lv.type === "support" ? "var(--up)" : "var(--down)";
+    srlines += `<line x1="0" y1="${yy.toFixed(1)}" x2="${plotW}" y2="${yy.toFixed(1)}" stroke="${col}" stroke-width="1" stroke-dasharray="4 4" opacity="0.55"/>`;
+  });
+  const idx = {}; c.forEach((d, i) => { idx[d.date] = i; });
+  let pmark = "";
+  (t.patterns || []).forEach((p) => {
+    const i = idx[p.date]; if (i == null) return;
+    const col = p.dir === "bull" ? "var(--up)" : (p.dir === "bear" ? "var(--down)" : "var(--neutral)");
+    const yy = p.dir === "bear" ? y(c[i].h) - 6 : y(c[i].l) + 6;
+    pmark += `<circle cx="${x(i)}" cy="${yy.toFixed(1)}" r="3" fill="${col}"><title>${p.date} ${p.type}</title></circle>`;
+  });
+  let cross = "";
+  (t.crosses || []).forEach((cr) => {
+    const i = idx[cr.date]; if (i == null) return;
+    const col = cr.type === "golden" ? "var(--up)" : "var(--down)";
+    cross += `<line x1="${x(i)}" y1="${top}" x2="${x(i)}" y2="${top + plotH}" stroke="${col}" stroke-width="1" stroke-dasharray="2 3" opacity="0.7"/>`;
+    cross += `<text x="${x(i) + 2}" y="${top + 12}" font-size="9" fill="${col}">${cr.type === "golden" ? "GC" : "DC"}</text>`;
+  });
+  let dax = "";
+  for (let k = 0; k < 6; k++) {
+    const i = Math.round((c.length - 1) * k / 5);
+    dax += `<text x="${x(i)}" y="${top + plotH + 16}" text-anchor="middle" font-size="9" fill="var(--muted)">${shortDate(c[i].date)}</text>`;
+  }
+  const scrollSvg = `<svg width="${plotW}" height="${H}">${grid}${srlines}${mas}${candles}${pmark}${cross}${dax}</svg>`;
+  const yaxisSvg = `<svg width="48" height="${H}">${yaxis}</svg>`;
+
+  const maBoxes = [20, 50, 100, 200].map((n) => {
+    const v = s["ma" + n], cls = v == null ? "" : (s.price >= v ? "above" : "below");
+    return `<div class="box ${cls}"><div class="k" style="color:${MA_COLOR[n]}">${n} DMA</div><div class="v">${v == null ? "—" : fmt(v)}</div></div>`;
+  }).join("");
+  const legend = [20, 50, 100, 200].map((n) => `<span><i style="background:${MA_COLOR[n]}"></i>${n} DMA</span>`).join("");
+  const plist = (t.patterns || []).slice().reverse().slice(0, 8).map((p) =>
+    `<div class="prow"><span class="pdate">${shortDate(p.date)}</span><span class="pdot ${p.dir}"></span><span>${p.type}</span></div>`
+  ).join("") || '<div class="caption">No notable candlestick patterns in the recent window.</div>';
+  const lchips = (t.levels || []).slice().reverse().map((lv) =>
+    `<span class="lvl-chip ${lv.type}">${fmt(lv.price)}</span>`).join("");
+
+  document.getElementById("tech-content").innerHTML = `
+    <div class="card">
+      <div class="tech-trend">${s.trend}</div>
+      <div class="tech-summary">Bank Nifty <b>${fmt(s.price)}</b> · as of ${t.as_of}</div>
+      <div class="maval">${maBoxes}</div>
+    </div>
+    <div class="card">
+      <h3>Price &amp; moving averages</h3>
+      <div class="ma-legend">${legend}</div>
+      <div style="display:flex">${yaxisSvg}<div class="chart-scroll" id="chart-scroll">${scrollSvg}</div></div>
+      <div class="chart-hint">scroll ↔ for more history · dashed = support/resistance · GC/DC = golden/death cross · dots = candlestick patterns</div>
+    </div>
+    <div class="card">
+      <h3>Support &amp; resistance</h3>
+      <div class="lvl-list">${lchips}</div>
+      <div class="caption">Clustered swing highs/lows. Green = support (below price), red = resistance (above).</div>
+    </div>
+    <div class="card">
+      <h3>Recent candlestick patterns</h3>
+      <div class="plist">${plist}</div>
+      <div class="caption">Detected on daily candles — educational signals, not guarantees.</div>
+    </div>`;
+  document.getElementById("tech-content").classList.remove("hidden");
+  document.getElementById("tech-loading").classList.add("hidden");
+  // start scrolled to the most recent candles (retry until layout settles)
+  scrollChartToEnd();
 }
 
 // ---------------------------------------------------------------------------
