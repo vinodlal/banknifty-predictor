@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-07T17:15:57.121585Z",
+  "generated_at": "2026-07-07T17:21:32.170084Z",
   "summary": {
     "days": 66,
     "scored_days": 64,
@@ -1996,8 +1996,8 @@
       ],
       "prev_close": 58291.5,
       "actual_open": 58567.85,
-      "actual_close": 58134.5,
-      "daily_move_pct": -0.269,
+      "actual_close": 58200.7,
+      "daily_move_pct": -0.156,
       "directional_correct": null,
       "zone_hit": true,
       "zone_accuracy_pct": 100.0,

@@ -309,13 +309,50 @@ def analyze(day_payload, weights, macro_flags=None):
     today = day_payload.get("date")
     macro_today = [m for m in macro_flags if m.get("date") == today]
 
+    # --- day change vs prior close
+    prev_close = bn[-2]["close"] if len(bn) >= 2 else price
+    change = price - prev_close
+    change_pct = (change / prev_close * 100) if prev_close else 0.0
+
+    # --- score label so a mid-scale number isn't misread as "low"
+    # (0-100, 50 = neutral). 65+ = Buy, 35- = Sell.
+    if score >= 65:
+        score_label = "Bullish (Buy trigger)"
+    elif score >= 55:
+        score_label = "Mildly bullish (below Buy trigger)"
+    elif score > 45:
+        score_label = "Neutral"
+    elif score > 35:
+        score_label = "Mildly bearish (above Sell trigger)"
+    else:
+        score_label = "Bearish (Sell trigger)"
+
+    # --- projected next-day levels: pivots from TODAY's OHLC apply to next session
+    projection = {
+        "next_day_pivot": round(piv["pivot"], 2),
+        "next_day_upside": round(piv["r1"], 2),      # projected resistance / buy target
+        "next_day_downside": round(piv["s1"], 2),    # projected support / sell target
+        "next_day_range": [round(piv["s1"], 2), round(piv["r1"], 2)],
+    }
+
     return {
         "date": today,
         "banknifty_close": round(price, 2),
+        "ohlc": {
+            "open": round(last["open"], 2), "high": round(last["high"], 2),
+            "low": round(last["low"], 2), "close": round(price, 2),
+        },
+        "prev_close": round(prev_close, 2),
+        "change": round(change, 2),
+        "change_pct": round(change_pct, 2),
         "recommendation": recommendation,
         "score": score,
+        "score_label": score_label,
+        "buy_trigger": 65,
+        "sell_trigger": 35,
         "buy_zone": buy_zone,
         "sell_zone": sell_zone,
+        "projection": projection,
         "reasons": reasons,
         "correlations": correlations,
         "pcr": pcr,

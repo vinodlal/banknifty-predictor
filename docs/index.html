@@ -16,6 +16,7 @@
       --text: #e7edf7; --muted: #8ea0bd; --line: #22304a;
       --buy: #1fbf75; --sell: #ef4d5a; --neutral: #d8a417;
       --buy-dim: #123528; --sell-dim: #3a1620; --neutral-dim: #33290a;
+      --corr-neg: #5aa9ff; --corr-pos: #f2b347;
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body {
@@ -58,6 +59,46 @@
     .pcr-row { display: flex; justify-content: space-between; font-size: 15px; }
     .macro { background: var(--neutral-dim); border-color: var(--neutral); }
     .disclaimer { font-size: 11px; color: var(--muted); text-align: center; padding: 12px 16px 20px; line-height: 1.5; }
+
+    /* score gauge */
+    .gauge { margin-top: 12px; }
+    .gauge-track { position: relative; height: 12px; border-radius: 6px; overflow: hidden;
+      background: linear-gradient(90deg, var(--sell) 0%, var(--sell) 35%, var(--neutral) 35%, var(--neutral) 65%, var(--buy) 65%, var(--buy) 100%); opacity: 0.85; }
+    .gauge-mark { position: absolute; top: -3px; width: 3px; height: 18px; background: var(--text); border-radius: 2px; box-shadow: 0 0 0 2px var(--panel); }
+    .gauge-scale { display: flex; justify-content: space-between; font-size: 9px; color: var(--muted); margin-top: 4px; }
+    .gauge-label { font-size: 12px; color: var(--muted); margin-top: 8px; }
+    .gauge-label b { color: var(--text); }
+
+    /* price header */
+    .price-date { font-size: 12px; color: var(--muted); }
+    .price-big { font-size: 30px; font-weight: 800; line-height: 1.1; margin-top: 2px; }
+    .chg { display: inline-block; font-size: 13px; font-weight: 700; margin-left: 8px; vertical-align: middle; }
+    .chg.up { color: var(--buy); } .chg.down { color: var(--sell); }
+    .ohlc { display: flex; gap: 6px; margin-top: 12px; }
+    .ohlc .box { flex: 1; background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 4px; text-align: center; }
+    .ohlc .box .k { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
+    .ohlc .box .v { font-size: 14px; font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; }
+
+    /* projected value under zones */
+    .zone .proj { font-size: 11px; color: var(--muted); margin-top: 6px; }
+    .zone .proj b { color: var(--text); font-variant-numeric: tabular-nums; }
+    .internals { display: flex; gap: 10px; margin-top: 12px; font-size: 13px; }
+    .internals .chip { flex: 1; background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+    .internals .chip .k { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
+    .internals .chip .v { font-size: 15px; font-weight: 700; margin-top: 2px; }
+    .caption { font-size: 11px; color: var(--muted); margin-top: 10px; line-height: 1.4; }
+
+    /* correlation diverging bars */
+    .corr-row { display: flex; align-items: center; gap: 8px; margin: 10px 0; }
+    .corr-name { width: 58px; font-size: 12px; font-weight: 600; }
+    .corr-track { position: relative; flex: 1; height: 20px; background: var(--panel2); border-radius: 5px; }
+    .corr-zero { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--line); }
+    .corr-bar { position: absolute; top: 4px; height: 12px; border-radius: 3px; }
+    .corr-bar.neg { background: var(--corr-neg); }
+    .corr-bar.pos { background: var(--corr-pos); }
+    .corr-val { width: 44px; text-align: right; font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .corr-val small { display: block; font-size: 9px; color: var(--muted); font-weight: 400; }
+    .corr-axis { display: flex; justify-content: space-between; font-size: 9px; color: var(--muted); padding: 0 46px 0 66px; }
 
     /* Calendar */
     .cal-summary { display: flex; gap: 8px; margin-bottom: 12px; }

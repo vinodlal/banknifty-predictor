@@ -13,6 +13,10 @@ function fmt(n) {
   if (n === null || n === undefined) return "—";
   return Number(n).toLocaleString("en-IN", { maximumFractionDigits: 0 });
 }
+function fmt2(n) {
+  if (n === null || n === undefined) return "—";
+  return Number(n).toLocaleString("en-IN", { maximumFractionDigits: 2 });
+}
 function el(html) {
   const t = document.createElement("template");
   t.innerHTML = html.trim();
@@ -50,10 +54,32 @@ async function loadToday() {
   }
 }
 
+function corrBar(name, r20, r90) {
+  if (r20 === null || r20 === undefined) {
+    return `<div class="corr-row"><div class="corr-name">${name}</div>
+      <div class="corr-track"><div class="corr-zero"></div></div><div class="corr-val">—</div></div>`;
+  }
+  const mag = Math.min(Math.abs(r20), 1) * 50;
+  const neg = r20 < 0;
+  const style = neg ? `left:${(50 - mag).toFixed(1)}%;width:${mag.toFixed(1)}%`
+                    : `left:50%;width:${mag.toFixed(1)}%`;
+  const r90txt = (r90 === null || r90 === undefined) ? "" : `<small>90d ${r90.toFixed(2)}</small>`;
+  return `<div class="corr-row">
+    <div class="corr-name">${name}</div>
+    <div class="corr-track"><div class="corr-zero"></div>
+      <div class="corr-bar ${neg ? "neg" : "pos"}" style="${style}"></div></div>
+    <div class="corr-val">${r20.toFixed(2)}${r90txt}</div>
+  </div>`;
+}
+
 function renderToday(d) {
   document.getElementById("subhead").textContent = "Last updated " + (d.date || "—");
   const corr = d.correlations || {};
   const macro = (d.macro_today || []);
+  const o = d.ohlc || {};
+  const proj = d.projection || {};
+  const chgUp = (d.change || 0) >= 0;
+  const scorePos = Math.max(0, Math.min(100, d.score));
 
   const macroHtml = macro.length
     ? `<div class="card macro"><h3>Scheduled event today</h3>${macro.map(m => `<div>${m.label}</div>`).join("")}</div>`
@@ -62,26 +88,47 @@ function renderToday(d) {
   const html = `
     <div class="card" style="text-align:center">
       <span class="badge ${badgeClass(d.recommendation)}">${d.recommendation}</span>
-      <div class="score">Composite score: <b>${d.score}</b> / 100</div>
-      <div class="close">Bank Nifty close: <b>${fmt(d.banknifty_close)}</b></div>
-      <div class="zones">
-        <div class="zone buy"><div class="lbl">Buy zone</div><div class="val">${fmt(d.buy_zone?.[0])}–${fmt(d.buy_zone?.[1])}</div></div>
-        <div class="zone sell"><div class="lbl">Sell zone</div><div class="val">${fmt(d.sell_zone?.[0])}–${fmt(d.sell_zone?.[1])}</div></div>
+      <div class="gauge">
+        <div class="gauge-track"><div class="gauge-mark" style="left:calc(${scorePos}% - 1.5px)"></div></div>
+        <div class="gauge-scale"><span>0 · Sell</span><span>35</span><span>65</span><span>Buy · 100</span></div>
+        <div class="gauge-label">Score <b>${d.score}</b>/100 — ${d.score_label || ""}</div>
       </div>
     </div>
     ${macroHtml}
+    <div class="card">
+      <div class="price-date">Bank Nifty · ${d.date || "—"}</div>
+      <div class="price-big">${fmt(d.banknifty_close)}<span class="chg ${chgUp ? "up" : "down"}">${chgUp ? "▲" : "▼"} ${fmt2(Math.abs(d.change))} (${d.change_pct}%)</span></div>
+      <div class="ohlc">
+        <div class="box"><div class="k">Open</div><div class="v">${fmt(o.open)}</div></div>
+        <div class="box"><div class="k">High</div><div class="v">${fmt(o.high)}</div></div>
+        <div class="box"><div class="k">Low</div><div class="v">${fmt(o.low)}</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Zones &amp; next-day projection</h3>
+      <div class="zones">
+        <div class="zone buy"><div class="lbl">Buy zone</div><div class="val">${fmt(d.buy_zone?.[0])}–${fmt(d.buy_zone?.[1])}</div>
+          <div class="proj">↑ next-day target <b>${fmt(proj.next_day_upside)}</b></div></div>
+        <div class="zone sell"><div class="lbl">Sell zone</div><div class="val">${fmt(d.sell_zone?.[0])}–${fmt(d.sell_zone?.[1])}</div>
+          <div class="proj">↓ next-day target <b>${fmt(proj.next_day_downside)}</b></div></div>
+      </div>
+      <div class="internals">
+        <div class="chip"><div class="k">Next-day pivot</div><div class="v">${fmt(proj.next_day_pivot)}</div></div>
+        <div class="chip"><div class="k">PCR (ATM ±5)</div><div class="v">${d.pcr ?? "—"}</div></div>
+      </div>
+      <div class="caption">Projected levels are classic pivot points from today's range — a reference for tomorrow, not a forecast of where price will trade.</div>
+    </div>
     <div class="card">
       <h3>Why</h3>
       <ul class="reasons">${(d.reasons || []).map(r => `<li>${r}</li>`).join("")}</ul>
     </div>
     <div class="card">
-      <h3>Signals</h3>
-      <div class="pcr-row"><span>Put/Call ratio (ATM ±5)</span><b>${d.pcr ?? "—"}</b></div>
-      <table class="mini" style="margin-top:10px">
-        <tr><td>Bank Nifty vs VIX (20d)</td><td>${corr.vix_20d ?? "—"}</td></tr>
-        <tr><td>Bank Nifty vs Crude (20d)</td><td>${corr.crude_20d ?? "—"}</td></tr>
-        <tr><td>Bank Nifty vs USDINR (20d)</td><td>${corr.usdinr_20d ?? "—"}</td></tr>
-      </table>
+      <h3>How Bank Nifty moves with other markets (20-day)</h3>
+      <div class="corr-axis"><span>−1 opposite</span><span>0</span><span>same +1</span></div>
+      ${corrBar("VIX", corr.vix_20d, corr.vix_90d)}
+      ${corrBar("Crude", corr.crude_20d, corr.crude_90d)}
+      ${corrBar("USDINR", corr.usdinr_20d, corr.usdinr_90d)}
+      <div class="caption">Blue = moves opposite Bank Nifty; amber = moves with it. E.g. VIX at ${corr.vix_20d ?? "—"} means when volatility rises, Bank Nifty tends to fall.</div>
     </div>`;
   const c = document.getElementById("today-content");
   c.innerHTML = html;

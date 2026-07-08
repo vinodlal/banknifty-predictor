@@ -1,42 +1,63 @@
 {
   "date": "2026-07-07",
-  "banknifty_close": 58134.5,
-  "recommendation": "Buy Zone",
-  "score": 65,
+  "banknifty_close": 58200.7,
+  "ohlc": {
+    "open": 58567.85,
+    "high": 58581.1,
+    "low": 58110.1,
+    "close": 58200.7
+  },
+  "prev_close": 58291.5,
+  "change": -90.8,
+  "change_pct": -0.16,
+  "recommendation": "Neutral",
+  "score": 60,
+  "score_label": "Mildly bullish (below Buy trigger)",
+  "buy_trigger": 65,
+  "sell_trigger": 35,
   "buy_zone": [
     58021.25,
-    58275.23
+    58297.3
   ],
   "sell_zone": [
-    58275.23,
-    58440.37
+    58297.3,
+    58484.5
   ],
+  "projection": {
+    "next_day_pivot": 58297.3,
+    "next_day_upside": 58484.5,
+    "next_day_downside": 58013.5,
+    "next_day_range": [
+      58013.5,
+      58484.5
+    ]
+  },
   "reasons": [
-    "Price is within 0.2% of support (58,021).",
+    "Price is within 0.3% of support (58,021).",
     "PCR at 0.821 \u2014 balanced option positioning.",
     "Unfilled gap-up support near 56,815."
   ],
   "correlations": {
-    "vix_20d": -0.688,
+    "vix_20d": -0.683,
     "vix_90d": -0.744,
-    "crude_20d": -0.484,
-    "crude_90d": -0.607,
-    "usdinr_20d": -0.383,
-    "usdinr_90d": -0.249
+    "crude_20d": -0.478,
+    "crude_90d": -0.606,
+    "usdinr_20d": -0.394,
+    "usdinr_90d": -0.25
   },
   "pcr": 0.821,
   "levels": {
-    "pivot": 58275.23,
+    "pivot": 58297.3,
     "nearest_support": 58021.25,
-    "nearest_resistance": 58440.37,
-    "r1": 58440.37,
-    "r2": 58746.23,
-    "s1": 57969.37,
-    "s2": 57804.23,
+    "nearest_resistance": 58484.5,
+    "r1": 58484.5,
+    "r2": 58768.3,
+    "s1": 58013.5,
+    "s2": 57826.3,
     "atm_strike": 58100
   },
   "components": {
-    "sr": 73.0,
+    "sr": 61.3,
     "gap": 75.0,
     "pcr": 37.1,
     "vix_caution": false

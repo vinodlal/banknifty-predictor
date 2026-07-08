@@ -91,6 +91,26 @@ def fetch_option_chain(kite, spot):
     }
 
 
+def _override_today_close(kite, candles, exch_symbol, today):
+    """
+    Kite's CURRENT-day daily candle close is the last traded tick, not NSE's
+    official (last-30-min weighted) index close. After market close the live
+    quote's last_price already reflects the official close, so overwrite the
+    latest candle's close with it. No-op if the last candle isn't today.
+    Matters most for indices (NIFTY BANK / INDIA VIX); futures barely differ.
+    """
+    if not candles or candles[-1]["date"] != today:
+        return
+    try:
+        ltp = kite.ltp([exch_symbol]).get(exch_symbol, {}).get("last_price")
+    except Exception:
+        ltp = None
+    if ltp:
+        candles[-1]["close"] = ltp
+        candles[-1]["high"] = max(candles[-1]["high"], ltp)
+        candles[-1]["low"] = min(candles[-1]["low"], ltp)
+
+
 def main():
     kite = ku.make_kite()
 
@@ -108,12 +128,24 @@ def main():
     crude = _fetch_candles(kite, crude_inst["instrument_token"])
     usdinr = _fetch_candles(kite, usdinr_inst["instrument_token"])
 
+    # Correct the provisional current-day close with the official last_price —
+    # equity indices ONLY. Only fires when the last candle IS today (a same-day
+    # run before settlement). For the recommended next-morning refresh the last
+    # candle is the prior, already-settled session, so this safely no-ops. MCX
+    # crude (till ~23:30) and CDS USDINR (till 17:00) are excluded — a same-day
+    # run would inject an intraday value; a full re-pull self-corrects them.
+    today_iso = date.today().isoformat()
+    _override_today_close(kite, banknifty, "NSE:NIFTY BANK", today_iso)
+    _override_today_close(kite, vix, "NSE:INDIA VIX", today_iso)
+
     spot = banknifty[-1]["close"] if banknifty else 0.0
     option_chain = fetch_option_chain(kite, spot)
 
-    today = date.today().isoformat()
+    # Date the record by the latest actual candle, not the wall clock, so a
+    # morning refresh is labelled with the (settled) prior session, not "today".
+    session_date = banknifty[-1]["date"] if banknifty else date.today().isoformat()
     payload = {
-        "date": today,
+        "date": session_date,
         "fetched_at": datetime.utcnow().isoformat() + "Z",
         "banknifty": {
             "instrument_token": bn_inst["instrument_token"],
@@ -141,7 +173,7 @@ def main():
     }
 
     os.makedirs(HISTORY_DIR, exist_ok=True)
-    out_path = os.path.join(HISTORY_DIR, f"{today}.json")
+    out_path = os.path.join(HISTORY_DIR, f"{session_date}.json")
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(payload, f, indent=2)
     print(f"Saved raw fetch -> {out_path}")
