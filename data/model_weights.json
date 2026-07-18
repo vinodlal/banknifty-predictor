@@ -5,7 +5,7 @@
     "pcr": 25,
     "vix": 12
   },
-  "updated": "2026-07-11",
+  "updated": "2026-07-18",
   "version": 1,
-  "note": "Optimized via grid search over non-outlier backtest days (objective dir_acc+hit_rate: 1.330 -> 1.375). Drift capped at +-5 pts/cycle."
+  "note": "Optimized via grid search over non-outlier backtest days (objective dir_acc+hit_rate: 1.375 -> 1.375). Drift capped at +-5 pts/cycle."
 }
