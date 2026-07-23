@@ -1,0 +1,95 @@
+{
+  "generated_at": "2026-07-23T22:03:01.828483+05:30",
+  "lookback_days": 60,
+  "overall": "PASS",
+  "checks": [
+    {
+      "name": "structural[BANKNIFTY/kite]",
+      "passed": true,
+      "detail": "clean",
+      "rows": 42
+    },
+    {
+      "name": "structural[BANKNIFTY/public]",
+      "passed": true,
+      "detail": "clean",
+      "rows": 41
+    },
+    {
+      "name": "cross_source[BANKNIFTY]",
+      "passed": true,
+      "detail": "41 days compared, max diff 0.000% on 2026-06-01 (tolerance 0.5%)",
+      "days_compared": 41,
+      "max_diff_pct": 0.0,
+      "worst_day": "2026-06-01"
+    },
+    {
+      "name": "structural[NIFTY/kite]",
+      "passed": true,
+      "detail": "clean",
+      "rows": 42
+    },
+    {
+      "name": "structural[NIFTY/public]",
+      "passed": true,
+      "detail": "clean",
+      "rows": 41
+    },
+    {
+      "name": "cross_source[NIFTY]",
+      "passed": true,
+      "detail": "41 days compared, max diff 0.000% on 2026-06-10 (tolerance 0.5%)",
+      "days_compared": 41,
+      "max_diff_pct": 0.0,
+      "worst_day": "2026-06-10"
+    },
+    {
+      "name": "structural[INDIAVIX/kite]",
+      "passed": true,
+      "detail": "clean",
+      "rows": 42
+    },
+    {
+      "name": "structural[INDIAVIX/public]",
+      "passed": true,
+      "detail": "clean",
+      "rows": 41
+    },
+    {
+      "name": "cross_source[INDIAVIX]",
+      "passed": true,
+      "detail": "41 days compared, max diff 0.000% on 2026-06-01 (tolerance 0.5%)",
+      "days_compared": 41,
+      "max_diff_pct": 0.0,
+      "worst_day": "2026-06-01"
+    },
+    {
+      "name": "basis[BANKNIFTY]",
+      "passed": true,
+      "detail": "basis +0.14% vs spot 56,592.00 (band -1.0%..3.0%)",
+      "basis_pct": 0.145,
+      "future": "BANKNIFTY26JULFUT",
+      "spot_price": 56592
+    },
+    {
+      "name": "oi[BANKNIFTY]",
+      "passed": true,
+      "detail": "OI=1990950",
+      "oi": 1990950
+    },
+    {
+      "name": "basis[NIFTY]",
+      "passed": true,
+      "detail": "basis +0.07% vs spot 23,869.60 (band -1.0%..3.0%)",
+      "basis_pct": 0.069,
+      "future": "NIFTY26JULFUT",
+      "spot_price": 23869.6
+    },
+    {
+      "name": "oi[NIFTY]",
+      "passed": true,
+      "detail": "OI=15020200",
+      "oi": 15020200
+    }
+  ]
+}
