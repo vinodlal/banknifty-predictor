@@ -47,12 +47,19 @@ def pcr_subscore(pcr: float | None) -> float:
 
 
 # -- new sub-scores (confluence factors beyond v1) ----------------------------
-def momentum_subscore(rsi: float | None) -> float:
-    """RSI mapped to 0-100 bullishness: <30 oversold->bullish tilt (mean-revert
-    read), >70 overbought->bearish tilt, else scaled around 50."""
+def momentum_subscore(rsi: float | None, regime: str = "trend") -> float:
+    """RSI's correct READING depends on regime, not just its value:
+    - trend regime: high RSI = strong momentum = bullish continuation (as-is).
+    - range regime: high RSI = overbought = due to revert = bearish, and vice
+      versa — the mean-reversion interpretation, via a straight inversion.
+    Using the trend-following read unconditionally (the pre-fix behaviour)
+    is backwards in a range market and was a likely contributor to the ~50%
+    directional accuracy measured in the M4 backtest."""
     if rsi is None:
         return 50.0
-    return _clamp(rsi)  # RSI is already a natural 0-100 bullishness proxy
+    if regime == "range":
+        return _clamp(100 - rsi)
+    return _clamp(rsi)
 
 
 def ma_subscore(price: float, ma_values: dict[int, float | None]) -> float:

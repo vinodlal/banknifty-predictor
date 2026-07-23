@@ -33,17 +33,19 @@ _FACTOR_LABELS = {
 
 def _reasons(subscores: dict[str, float], weights: dict[str, float], bias: str,
              extra: list[str] | None = None, max_reasons: int = 5) -> list[str]:
+    """`extra` (regime context, VIX caution) leads — it explains how the
+    factor scores below should be READ (e.g. RSI is mean-reversion in a range
+    regime) — so it must never be truncated off the end by max_reasons."""
     ranked = sorted(
         ((k, v) for k, v in subscores.items() if k in weights),
         key=lambda kv: abs(kv[1] - 50), reverse=True,
     )
-    out = []
+    out = list(extra or [])
     for k, v in ranked:
         if abs(v - 50) < 5:
             continue
         direction = "bullish" if v > 50 else "bearish"
         out.append(f"{_FACTOR_LABELS.get(k, k)}: {direction} ({v:.0f}/100)")
-    out.extend(extra or [])
     return out[:max_reasons]
 
 
@@ -70,6 +72,18 @@ def analyze(symbol: str, kind: str, df: pd.DataFrame, *,
 
     gap_list = gaps_mod.unfilled_gaps(df)
 
+    # VIX regime read comes first — the momentum sub-score's correct READING
+    # (trend-following vs. mean-reverting) depends on it.
+    damp_flags: dict[str, bool] = {}
+    vix_chg_pct = None
+    if vix_df is not None:
+        caution, vix_chg_pct = regime.vix_caution(df, vix_df)
+        damp_flags["vix"] = caution
+
+    adx_series = momentum_mod.adx(df)
+    adx_val = None if adx_series.empty or pd.isna(adx_series.iloc[-1]) else float(adx_series.iloc[-1])
+    market_regime = regime.classify_regime(adx_val, vix_chg_pct)
+
     subscores: dict[str, float] = {
         "sr": score_mod.sr_subscore(price, support, resistance),
         "gap": score_mod.gap_subscore(price, gap_list),
@@ -83,7 +97,7 @@ def analyze(symbol: str, kind: str, df: pd.DataFrame, *,
 
     rsi_series = momentum_mod.rsi(df["close"])
     rsi_val = None if rsi_series.empty or pd.isna(rsi_series.iloc[-1]) else float(rsi_series.iloc[-1])
-    subscores["momentum"] = score_mod.momentum_subscore(rsi_val)
+    subscores["momentum"] = score_mod.momentum_subscore(rsi_val, regime=market_regime)
 
     ma = moving_avg.ma_stack(df)
     subscores["ma"] = score_mod.ma_subscore(price, ma["values"])
@@ -95,17 +109,13 @@ def analyze(symbol: str, kind: str, df: pd.DataFrame, *,
     if kind == "future" and oi_buildup:
         subscores["oi"] = score_mod.oi_subscore(oi_buildup)
 
-    damp_flags: dict[str, bool] = {}
-    vix_chg_pct = None
-    if vix_df is not None:
-        caution, vix_chg_pct = regime.vix_caution(df, vix_df)
-        damp_flags["vix"] = caution
-
     composite = score_mod.composite_score(subscores, weights, damp_flags=damp_flags)
     bias = decision.classify_bias(composite)
     confidence = decision.confidence_from_agreement(subscores, weights, bias)
 
-    extra_reasons = []
+    extra_reasons = [f"Regime: {market_regime}"
+                      + (f" (ADX {adx_val:.0f})" if adx_val is not None else "")
+                      + (" — RSI read as mean-reversion" if market_regime == "range" else "")]
     if damp_flags.get("vix"):
         extra_reasons.append(f"VIX rising ({vix_chg_pct:+.1f}%) while price falls — conviction reduced")
     reasons = _reasons(subscores, weights, bias, extra=extra_reasons)
@@ -122,5 +132,6 @@ def analyze(symbol: str, kind: str, df: pd.DataFrame, *,
             "s1": round(piv["s1"], 2), "atm_strike": atm,
         },
         "pcr": pcr_val, "ma": ma, "structure": structure_label,
+        "regime": market_regime, "adx": round(adx_val, 1) if adx_val is not None else None,
         "weights": weights, "disclaimer": DISCLAIMER,
     }
