@@ -5,8 +5,23 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 import pandas as pd
+import pytest
 
 IST = ZoneInfo("Asia/Kolkata")
+
+
+@pytest.fixture
+def paper_db():
+    """Isolated in-memory ledger DB per test — never touches the real
+    data/app.db. Any test that opens/settles/reads paper trades should
+    request this fixture."""
+    from core.paper import db as paper_db_module
+    paper_db_module.configure("sqlite:///:memory:")
+    yield
+    # Reset to uninitialized rather than eagerly (re)binding the real DB —
+    # that would create data/app.db as a side effect of merely running tests.
+    paper_db_module._engine = None
+    paper_db_module._SessionLocal = None
 
 
 def make_df(rows: list[dict]) -> pd.DataFrame:
