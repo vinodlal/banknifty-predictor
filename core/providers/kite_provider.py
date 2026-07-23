@@ -99,6 +99,23 @@ class KiteProvider(MarketDataProvider):
             "ts": datetime.now(IST).isoformat(),
         }
 
+    # -- holdings & search (stock desk, M5) -----------------------------------
+    def holdings(self) -> list[dict]:
+        return self.kite.holdings()
+
+    def search_equity(self, query: str, limit: int = 10) -> list[dict]:
+        """Case-insensitive substring match on tradingsymbol/name in NSE equities."""
+        df = self.instruments("NSE")
+        eq = df[df["instrument_type"] == "EQ"]
+        q = query.upper().strip()
+        hits = eq[eq["tradingsymbol"].str.contains(q, na=False)
+                  | eq["name"].str.upper().str.contains(q, na=False)]
+        return hits[["tradingsymbol", "name", "instrument_token"]].head(limit).to_dict("records")
+
+    def has_futures(self, name: str) -> bool:
+        df = self.instruments("NFO")
+        return not df[(df["name"] == name) & (df["instrument_type"] == "FUT")].empty
+
     # -- futures: nearest contract, OI, basis ---------------------------------
     def nearest_future(self, name: str) -> dict | None:
         """Nearest not-yet-expired FUT contract for an index name (e.g. 'BANKNIFTY')."""

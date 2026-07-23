@@ -15,6 +15,7 @@ from . import signal as signal_mod
 def analyze_futures(name: str, df: pd.DataFrame, *,
                      future_quote: dict, spot_quote: dict,
                      vix_df: pd.DataFrame | None = None,
+                     drivers: dict[str, pd.DataFrame] | None = None,
                      option_chain: dict | None = None,
                      oi_prev: int | None = None,
                      horizon: str = "swing",
@@ -28,7 +29,7 @@ def analyze_futures(name: str, df: pd.DataFrame, *,
     oi_chg_pct = ((oi_now - oi_prev) / oi_prev * 100) if oi_prev and oi_now is not None else 0.0
     buildup = oi_mod.classify_buildup(price_chg_pct, oi_chg_pct)
 
-    sig = signal_mod.analyze(name, kind="future", df=df, vix_df=vix_df,
+    sig = signal_mod.analyze(name, kind="future", df=df, vix_df=vix_df, drivers=drivers,
                               option_chain=option_chain, oi_buildup=buildup,
                               horizon=horizon, weights=weights)
 

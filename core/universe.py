@@ -32,6 +32,9 @@ GLOBAL: dict[str, Instrument] = {
     "BRENT": Instrument("BRENT", "global", "BZ=F", None),
     "USDINR": Instrument("USDINR", "global", "INR=X", "CDS:USDINR"),
     "GIFTNIFTY": Instrument("GIFTNIFTY", "global", None, None),
+    "NASDAQ": Instrument("NASDAQ", "global", "^IXIC", None),
+    "SEMICONDUCTOR": Instrument("SEMICONDUCTOR", "global", "^SOX", None),  # Philadelphia SOX index
+    "KOSPI": Instrument("KOSPI", "global", "^KS11", None),
 }
 
 
@@ -46,3 +49,45 @@ def resolve(name: str) -> Instrument:
 
 
 SNAPSHOT = ["NIFTY", "GIFTNIFTY", "BANKNIFTY", "BRENT", "USDINR", "INDIAVIX"]
+
+# -- sector -> candidate driver map -------------------------------------------
+# Config-driven so coverage can expand without touching engine code. Note what
+# this DOES and DOESN'T do: core.features.drivers.pct_corr always recomputes
+# correlation STRENGTH live on a trailing window every call, so an existing
+# driver's influence adapts automatically as relationships shift (e.g. IT's
+# sensitivity to Nasdaq/semiconductors strengthening or weakening over time).
+# What ISN'T automated yet is discovering NEW candidate drivers nobody
+# configured — that's a natural extension for M6's optimizer (systematically
+# testing a broader universe of macro series against each sector and
+# promoting the ones with a persistent, significant correlation), not yet built.
+SECTOR_DRIVERS: dict[str, list[str]] = {
+    "BANKING": ["BRENT", "USDINR"],
+    "IT": ["NASDAQ", "SEMICONDUCTOR", "KOSPI"],
+    "ENERGY": ["BRENT", "USDINR"],
+    "AUTO": ["BRENT", "USDINR"],
+    "PHARMA": ["USDINR"],
+    "GENERAL": ["BRENT", "USDINR"],
+}
+
+# Starter symbol -> sector map. Deliberately small — extend as needed; any
+# unmapped symbol falls back to GENERAL (Crude/USD-INR).
+STOCK_SECTOR: dict[str, str] = {
+    "HDFCBANK": "BANKING", "ICICIBANK": "BANKING", "SBIN": "BANKING",
+    "AXISBANK": "BANKING", "KOTAKBANK": "BANKING",
+    "TCS": "IT", "INFY": "IT", "WIPRO": "IT", "HCLTECH": "IT", "TECHM": "IT",
+    "RELIANCE": "ENERGY", "ONGC": "ENERGY",
+    "MARUTI": "AUTO", "TATAMOTORS": "AUTO", "M&M": "AUTO",
+    "SUNPHARMA": "PHARMA", "DRREDDY": "PHARMA", "CIPLA": "PHARMA",
+}
+
+
+def sector_for(symbol: str) -> str:
+    return STOCK_SECTOR.get(symbol.upper().strip(), "GENERAL")
+
+
+def drivers_for(sector_or_symbol: str) -> list[str]:
+    """Accepts a sector name directly, or a stock symbol (resolved to its
+    sector first). BANKNIFTY/NIFTY use GENERAL (Crude/USD-INR)."""
+    key = sector_or_symbol.upper().strip()
+    sector = key if key in SECTOR_DRIVERS else sector_for(key)
+    return SECTOR_DRIVERS.get(sector, SECTOR_DRIVERS["GENERAL"])

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import pandas as pd
 
+from ..features import drivers as drivers_mod
 from ..features import gaps as gaps_mod
 from ..features import levels, moving_avg, options as options_mod, price_action
 from ..features import momentum as momentum_mod
@@ -17,17 +18,19 @@ from . import score as score_mod
 DISCLAIMER = "Educational/informational only. Not SEBI-registered investment advice."
 
 DEFAULT_WEIGHTS = {
-    "sr": 25, "gap": 15, "pcr": 15, "momentum": 15, "ma": 15, "structure": 15, "vix": 10,
+    "sr": 20, "gap": 12, "pcr": 13, "momentum": 13, "ma": 13, "structure": 13,
+    "drivers": 16, "vix": 10,
 }
 DEFAULT_FUTURES_WEIGHTS = {
-    "sr": 20, "gap": 10, "pcr": 15, "momentum": 10, "ma": 10, "structure": 10, "oi": 15, "vix": 10,
+    "sr": 18, "gap": 8, "pcr": 14, "momentum": 8, "ma": 8, "structure": 8,
+    "oi": 14, "drivers": 14, "vix": 8,
 }
 
 _FACTOR_LABELS = {
     "sr": "Price near support/resistance", "gap": "Unfilled gap positioning",
     "pcr": "Option PCR positioning", "momentum": "RSI momentum",
     "ma": "Price vs. moving-average stack", "structure": "Swing structure (HH/HL vs LH/LL)",
-    "oi": "Futures OI build-up",
+    "oi": "Futures OI build-up", "drivers": "Crude/USD-INR driver correlation",
 }
 
 
@@ -51,12 +54,23 @@ def _reasons(subscores: dict[str, float], weights: dict[str, float], bias: str,
 
 def analyze(symbol: str, kind: str, df: pd.DataFrame, *,
             vix_df: pd.DataFrame | None = None,
+            drivers: dict[str, pd.DataFrame] | None = None,
             option_chain: dict | None = None,
             oi_buildup: str | None = None,
             horizon: str = "swing",
             weights: dict[str, float] | None = None) -> dict:
     """kind: 'index' | 'future' | 'equity'. df must have >= ~30 rows for a
-    meaningful MA/RSI/structure read; pivots/gaps work with fewer."""
+    meaningful MA/RSI/structure read; pivots/gaps work with fewer.
+
+    `drivers` is an arbitrary {name: OHLCV DataFrame} map of macro/cross-asset
+    series to correlate against — the SET of relevant drivers differs by
+    sector (Bank Nifty cares about Crude/USD-INR; IT stocks care about
+    Nasdaq/semiconductor-index/KOSPI) — see core.universe.drivers_for(sector)
+    for the config-driven mapping. The correlation strength itself is always
+    recomputed on a trailing window each call, so it adapts automatically as
+    relationships strengthen/weaken over time; discovering NEW candidate
+    drivers (vs. reading configured ones) is not yet automated — see the
+    note in core/universe.py's SECTOR_DRIVERS."""
     weights = weights or (DEFAULT_FUTURES_WEIGHTS if kind == "future" else DEFAULT_WEIGHTS)
     last = df.iloc[-1]
     price = float(last["close"])
@@ -106,6 +120,18 @@ def analyze(symbol: str, kind: str, df: pd.DataFrame, *,
     structure_label = price_action.structure_trend(seq)
     subscores["structure"] = score_mod.structure_subscore(structure_label)
 
+    relationships = []
+    for name, driver_df in (drivers or {}).items():
+        if driver_df is None or len(driver_df) < 4:
+            continue
+        t_aligned, d_aligned = drivers_mod.align_by_date(df, driver_df)
+        corr = drivers_mod.pct_corr(t_aligned, d_aligned, window=20)
+        rel = drivers_mod.driver_relationship(name, driver_df, corr)
+        if rel:
+            relationships.append(rel)
+    if relationships:
+        subscores["drivers"] = drivers_mod.driver_subscore(relationships)
+
     if kind == "future" and oi_buildup:
         subscores["oi"] = score_mod.oi_subscore(oi_buildup)
 
@@ -118,6 +144,10 @@ def analyze(symbol: str, kind: str, df: pd.DataFrame, *,
                       + (" — RSI read as mean-reversion" if market_regime == "range" else "")]
     if damp_flags.get("vix"):
         extra_reasons.append(f"VIX rising ({vix_chg_pct:+.1f}%) while price falls — conviction reduced")
+    for rel in relationships:
+        if rel["implication"] != "neutral":
+            extra_reasons.append(f"{rel['name']} {rel['change_pct']:+.1f}% ({rel['relationship']} "
+                                  f"corr {rel['corr_20d']}) — {rel['implication']} read")
     reasons = _reasons(subscores, weights, bias, extra=extra_reasons)
 
     return {
@@ -133,5 +163,6 @@ def analyze(symbol: str, kind: str, df: pd.DataFrame, *,
         },
         "pcr": pcr_val, "ma": ma, "structure": structure_label,
         "regime": market_regime, "adx": round(adx_val, 1) if adx_val is not None else None,
+        "relationships": relationships,
         "weights": weights, "disclaimer": DISCLAIMER,
     }

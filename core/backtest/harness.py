@@ -9,7 +9,9 @@ Scope note: PCR/OI factors need point-in-time option-chain snapshots that
 Kite's REST API cannot reconstruct for arbitrary past dates (it only exposes
 the live chain). BACKTEST_WEIGHTS therefore excludes "pcr"/"oi" and reweights
 the factors that ARE reconstructable from historical OHLC (S/R, gaps,
-momentum, MA stack, structure, VIX). PCR/OI are fully live in production
+momentum, MA stack, structure, VIX, and now cross-asset drivers like
+Crude/USD-INR/Nasdaq — those DO have deep public daily history via
+PublicProvider, unlike options data). PCR/OI are fully live in production
 (signal.py/futures.py) and will be exercised going forward by the M6
 paper-trading ledger, which needs no historical reconstruction.
 """
@@ -21,7 +23,8 @@ from ..engine import signal as signal_mod
 from ..features import momentum as momentum_mod
 from ..trade_plan.plan import build_trade_plan
 
-BACKTEST_WEIGHTS = {"sr": 25, "gap": 15, "momentum": 20, "ma": 20, "structure": 20, "vix": 10}
+BACKTEST_WEIGHTS = {"sr": 20, "gap": 12, "momentum": 16, "ma": 16, "structure": 16,
+                     "drivers": 16, "vix": 10}
 
 OUTLIER_MIN_MOVE_PCT = 3.0
 OUTLIER_VOL_MULT = 2.0
@@ -68,6 +71,7 @@ def _simulate_trade_outcome(df: pd.DataFrame, t: int, plan: dict, max_days: int 
 
 
 def walk_forward(symbol: str, df: pd.DataFrame, vix_df: pd.DataFrame | None = None, *,
+                  drivers: dict[str, pd.DataFrame] | None = None,
                   kind: str = "index", weights: dict | None = None,
                   min_window: int = 210, horizon_days: int = 1,
                   trade_max_days: int = 10) -> list[dict]:
@@ -81,7 +85,16 @@ def walk_forward(symbol: str, df: pd.DataFrame, vix_df: pd.DataFrame | None = No
             v = vix_df[vix_df["ts"] <= cur_date]
             vix_hist = v.reset_index(drop=True) if len(v) >= 4 else None
 
-        sig = signal_mod.analyze(symbol, kind, hist, vix_df=vix_hist, weights=weights)
+        drivers_hist = None
+        if drivers:
+            drivers_hist = {}
+            for dname, ddf in drivers.items():
+                dv = ddf[ddf["ts"] <= cur_date]
+                if len(dv) >= 4:
+                    drivers_hist[dname] = dv.reset_index(drop=True)
+
+        sig = signal_mod.analyze(symbol, kind, hist, vix_df=vix_hist, drivers=drivers_hist,
+                                  weights=weights)
 
         now_close = float(df["close"].iloc[t])
         future_close = float(df["close"].iloc[t + horizon_days])
