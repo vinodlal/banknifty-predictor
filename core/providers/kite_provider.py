@@ -34,6 +34,21 @@ class KiteProvider(MarketDataProvider):
             self._kite = get_client()
         return self._kite
 
+    def _call(self, fn):
+        """Run a zero-arg Kite call, auto-recovering once from an expired
+        token. Kite invalidates access tokens at a fixed daily time (~6 AM
+        IST) regardless of when they were generated — our day-string session
+        cache (kite_auth.py) can't detect that boundary in advance, so any
+        call can hit a live TokenException even on a "same calendar day"
+        cached session. Retrying once after a forced fresh login handles it
+        without callers needing to know or care."""
+        from kiteconnect.exceptions import TokenException
+        try:
+            return fn()
+        except TokenException:
+            self._kite = get_client(force_refresh=True)
+            return fn()
+
     # -- instrument dump (cached) -------------------------------------------------
     def instruments(self, exchange: str) -> pd.DataFrame:
         if exchange in self._instr_cache:
@@ -43,7 +58,7 @@ class KiteProvider(MarketDataProvider):
         if path.exists():
             df = pd.read_parquet(path)
         else:
-            rows = self.kite.instruments(exchange)
+            rows = self._call(lambda: self.kite.instruments(exchange))
             df = pd.DataFrame(rows)
             path.parent.mkdir(parents=True, exist_ok=True)
             df.to_parquet(path, index=False)
@@ -74,7 +89,7 @@ class KiteProvider(MarketDataProvider):
     # -- MarketDataProvider ---------------------------------------------------
     def daily_candles(self, symbol: str, start: date, end: date) -> pd.DataFrame:
         token, _ = self._resolve_token(symbol)
-        rows = self.kite.historical_data(token, start, end, interval="day")
+        rows = self._call(lambda: self.kite.historical_data(token, start, end, interval="day"))
         if not rows:
             return pd.DataFrame(columns=OHLCV_COLS)
         df = pd.DataFrame(rows)
@@ -90,7 +105,7 @@ class KiteProvider(MarketDataProvider):
     def quote(self, symbol: str) -> dict:
         inst = resolve(symbol)
         key = inst.kite if inst.kite else f"NSE:{symbol.upper()}"
-        q = self.kite.quote([key])[key]
+        q = self._call(lambda: self.kite.quote([key]))[key]
         return {
             "symbol": symbol,
             "source": "kite",
@@ -101,7 +116,7 @@ class KiteProvider(MarketDataProvider):
 
     # -- holdings & search (stock desk, M5) -----------------------------------
     def holdings(self) -> list[dict]:
-        return self.kite.holdings()
+        return self._call(lambda: self.kite.holdings())
 
     def search_equity(self, query: str, limit: int = 10) -> list[dict]:
         """Case-insensitive substring match on tradingsymbol/name in NSE equities."""
@@ -134,7 +149,7 @@ class KiteProvider(MarketDataProvider):
         if fut is None:
             return None
         key = f"NFO:{fut['tradingsymbol']}"
-        q = self.kite.quote([key])[key]
+        q = self._call(lambda: self.kite.quote([key]))[key]
         return {
             "tradingsymbol": fut["tradingsymbol"],
             "expiry": str(fut["expiry"]),
@@ -174,7 +189,8 @@ class KiteProvider(MarketDataProvider):
         keys = [f"NFO:{ts}" for ts in chain["tradingsymbol"]]
         quotes = {}
         for i in range(0, len(keys), 400):  # Kite caps instruments-per-call
-            quotes.update(self.kite.quote(keys[i:i + 400]))
+            batch = keys[i:i + 400]
+            quotes.update(self._call(lambda batch=batch: self.kite.quote(batch)))
 
         calls, puts = [], []
         for _, row in chain.iterrows():
