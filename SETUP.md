@@ -75,8 +75,19 @@ python -m core.security.setup_credentials --status
 > Tell me once the required Kite secrets show ✓ and I'll run the data-accuracy gate to
 > confirm every source is correct before building any signals on it.
 
-## 4. (Optional) Telegram alerts
+## 4. Telegram alerts
 
-- In Telegram, message **@BotFather** → `/newbot` → follow prompts → copy the **bot token**
-  into `TELEGRAM_BOT_TOKEN`.
-- Message your new bot once, then get your **chat id** (I'll help) into `TELEGRAM_CHAT_ID`.
+1. In Telegram, message **@BotFather** → send `/newbot` → follow the prompts (pick a name
+   and a username ending in `bot`) → it replies with a **bot token**
+   (looks like `123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ`).
+2. Search for your new bot by its username and send it **any message** (e.g. "hi") — this
+   lets it know your chat, so it can message you back.
+3. Run the secure setup and paste the token when prompted for `TELEGRAM_BOT_TOKEN`:
+   ```
+   .venv\Scripts\python.exe -m core.security.setup_credentials
+   ```
+4. To get your **chat id** for `TELEGRAM_CHAT_ID`, run:
+   ```
+   .venv\Scripts\python.exe -m core.alerts.get_chat_id
+   ```
+   (after step 2 — the bot needs at least one message from you first).

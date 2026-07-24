@@ -145,3 +145,48 @@ class KiteProvider(MarketDataProvider):
             "source": "kite",
             "ts": datetime.now(IST).isoformat(),
         }
+
+    # -- option chain (morning brief PCR, M7) ---------------------------------
+    def option_chain(self, name: str, strike_window_pct: float = 8.0) -> dict | None:
+        """Nearest-expiry option chain for `name` (e.g. 'BANKNIFTY'), filtered
+        to strikes within strike_window_pct of spot — otherwise a single
+        quote() batch call could span hundreds of far-OTM strikes."""
+        spot_q = self.quote(name)
+        spot = spot_q["last_price"]
+
+        df = self.instruments("NFO")
+        opts = df[(df["name"] == name) & (df["instrument_type"].isin(["CE", "PE"]))].copy()
+        if opts.empty:
+            return None
+        opts["expiry"] = pd.to_datetime(opts["expiry"]).dt.date
+        today = datetime.now(IST).date()
+        upcoming = sorted(e for e in opts["expiry"].unique() if e >= today)
+        if not upcoming:
+            return None
+        nearest_expiry = upcoming[0]
+        chain = opts[opts["expiry"] == nearest_expiry]
+
+        lo, hi = spot * (1 - strike_window_pct / 100), spot * (1 + strike_window_pct / 100)
+        chain = chain[(chain["strike"] >= lo) & (chain["strike"] <= hi)]
+        if chain.empty:
+            return None
+
+        keys = [f"NFO:{ts}" for ts in chain["tradingsymbol"]]
+        quotes = {}
+        for i in range(0, len(keys), 400):  # Kite caps instruments-per-call
+            quotes.update(self.kite.quote(keys[i:i + 400]))
+
+        calls, puts = [], []
+        for _, row in chain.iterrows():
+            q = quotes.get(f"NFO:{row['tradingsymbol']}")
+            if not q:
+                continue
+            entry = {"strike": float(row["strike"]), "tradingsymbol": row["tradingsymbol"],
+                      "oi": q.get("oi", 0) or 0, "last_price": q.get("last_price")}
+            (calls if row["instrument_type"] == "CE" else puts).append(entry)
+
+        return {
+            "expiry": str(nearest_expiry), "spot": spot,
+            "calls": sorted(calls, key=lambda c: c["strike"]),
+            "puts": sorted(puts, key=lambda p: p["strike"]),
+        }

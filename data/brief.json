@@ -1,0 +1,376 @@
+{
+  "generated_at": "2026-07-24T06:12:06.663884+05:30",
+  "snapshot": {
+    "NIFTY": {
+      "last_price": 23869.6,
+      "prev_close": 23996.25,
+      "change_pct": -0.53,
+      "source": "kite"
+    },
+    "BANKNIFTY": {
+      "last_price": 56592,
+      "prev_close": 57126.8,
+      "change_pct": -0.94,
+      "source": "kite"
+    },
+    "INDIAVIX": {
+      "last_price": 13.48,
+      "prev_close": 13.29,
+      "change_pct": 1.43,
+      "source": "kite"
+    },
+    "BRENT": {
+      "last_price": 100.75,
+      "prev_close": 96.29000091552734,
+      "change_pct": 4.63,
+      "source": "public"
+    },
+    "USDINR": {
+      "last_price": 96.563,
+      "prev_close": 96.55500030517578,
+      "change_pct": 0.01,
+      "source": "public"
+    },
+    "GIFTNIFTY": {
+      "last_price": null,
+      "prev_close": null,
+      "change_pct": null,
+      "source": null
+    }
+  },
+  "pcr": 0.966,
+  "status": "GIFT Nifty data unavailable \u2014 no clean free feed yet. Brent crude up 4.6% overnight. Bank Nifty PCR at 0.966 \u2014 balanced option positioning.",
+  "news": {
+    "india": [
+      {
+        "title": "Stock recommendations for 24 July from MarketSmith India",
+        "link": "https://www.livemint.com/market/stock-market-news/stock-recommendations-for-24-july-from-marketsmith-india-11784813276289.html",
+        "source": "Livemint Markets",
+        "published": "2026-07-24T06:01:03+05:30",
+        "sentiment": "neutral"
+      },
+      {
+        "title": "Raja Venkatraman recommends three stocks for 24 July",
+        "link": "https://www.livemint.com/market/stock-market-news/raja-venkatraman-recommends-three-stocks-for-24-july-sensex-nifty-11784818333324.html",
+        "source": "Livemint Markets",
+        "published": "2026-07-24T06:00:23+05:30",
+        "sentiment": "neutral"
+      },
+      {
+        "title": "The Street resets its Nifty 500 bets. Here are the winners",
+        "link": "https://www.livemint.com/market/stock-market-news/the-street-resets-its-nifty-500-bets-here-are-the-winners-indian-stock-market-11784798077110.html",
+        "source": "Livemint Markets",
+        "published": "2026-07-24T05:58:03+05:30",
+        "sentiment": "neutral"
+      },
+      {
+        "title": "Temasek-backed Manipal Health to line up $1-billion IPO",
+        "link": "https://economictimes.indiatimes.com/markets/ipos/fpos/temasek-backed-manipal-health-to-line-up-1-billion-ipo/articleshow/132594155.cms",
+        "source": "ET Markets",
+        "published": "2026-07-24T05:50:07+05:30",
+        "sentiment": "neutral"
+      },
+      {
+        "title": "North India leads India's expanding stock market investor base",
+        "link": "https://economictimes.indiatimes.com/markets/stocks/news/north-india-leads-indias-expanding-stock-market-investor-base/articleshow/132594143.cms",
+        "source": "ET Markets",
+        "published": "2026-07-24T05:43:16+05:30",
+        "sentiment": "neutral"
+      },
+      {
+        "title": "Sebi plans a wider investment play for portfolio managers",
+        "link": "https://economictimes.indiatimes.com/markets/stocks/news/sebi-plans-a-wider-investment-play-for-portfolio-managers/articleshow/132594124.cms",
+        "source": "ET Markets",
+        "published": "2026-07-24T05:38:26+05:30",
+        "sentiment": "neutral"
+      },
+      {
+        "title": "India's IT giants grapple with weak growth despite resilient deal momentum",
+        "link": "https://economictimes.indiatimes.com/markets/stocks/earnings/indias-it-giants-grapple-with-weak-growth-despite-resilient-deal-momentum/articleshow/132594084.cms",
+        "source": "ET Markets",
+        "published": "2026-07-24T05:34:59+05:30",
+        "sentiment": "bearish"
+      },
+      {
+        "title": "CLO Price Swings Dictated by Tokyo, Wharton-Led Study Shows",
+        "link": "https://www.livemint.com/market/clo-price-swings-dictated-by-tokyo-wharton-led-study-shows-11784848733746.html",
+        "source": "Livemint Markets",
+        "published": "2026-07-24T04:48:53+05:30",
+        "sentiment": "neutral"
+      }
+    ],
+    "global": [
+      {
+        "title": "Nokia outlines Q3 net sales growth of 3%-7% as it plans AI-RAN pilots by end of 2026",
+        "link": "https://seekingalpha.com/news/4617868-nokia-outlines-q3-net-sales-growth-of-3-percentminus-7-percent-as-it-plans-ai-ran-pilots-by?utm_source=feed_news_all&utm_medium=referral&feed_item_type=news",
+        "source": "Seeking Alpha",
+        "published": "2026-07-23T20:32:42-04:00",
+        "sentiment": "neutral"
+      },
+      {
+        "title": "Edwards lifts 2026 sales growth outlook to 10%-11% while reaffirming $2.95-$3.05 EPS",
+        "link": "https://seekingalpha.com/news/4617867-edwards-lifts-2026-sales-growth-outlook-to-10-percentminus-11-percent-while-reaffirming-2_95?utm_source=feed_news_all&utm_medium=referral&feed_item_type=news",
+        "source": "Seeking Alpha",
+        "published": "2026-07-23T20:31:15-04:00",
+        "sentiment": "bearish"
+      },
+      {
+        "title": "Japan core inflation rate in June creeps up from 4-year low as higher oil prices bite",
+        "link": "https://www.cnbc.com/2026/07/24/japan-cpi-june-inflation-oil-prices-yen.html",
+        "source": "CNBC World",
+        "published": "2026-07-24T00:23:08+00:00",
+        "sentiment": "neutral"
+      },
+      {
+        "title": "Allianz to buy HSBC\u2019s Singapore insurance unit for $2.09 billion",
+        "link": "https://www.cnbc.com/2026/07/24/allianz-to-buy-hsbcs-singapore-insurance-unit-for-2billion.html",
+        "source": "CNBC World",
+        "published": "2026-07-24T00:18:30+00:00",
+        "sentiment": "neutral"
+      },
+      {
+        "title": "Intel forecasts Q3 2026 EPS of $0.38 on $15.8B-$16.8B revenue while planning 2026 CapEx above $20B",
+        "link": "https://seekingalpha.com/news/4617866-intel-forecasts-q3-2026-eps-of-0_38-on-15_8b-16_8b-revenue-while-planning-2026-capex-above?utm_source=feed_news_all&utm_medium=referral&feed_item_type=news",
+        "source": "Seeking Alpha",
+        "published": "2026-07-23T20:03:00-04:00",
+        "sentiment": "neutral"
+      },
+      {
+        "title": "Robert Half outlines Q3 revenue of $1.31B-$1.41B as Protiviti targets $45M annualized savings",
+        "link": "https://seekingalpha.com/news/4617864-robert-half-outlines-q3-revenue-of-1_31b-1_41b-as-protiviti-targets-45m-annualized-savings?utm_source=feed_news_all&utm_medium=referral&feed_item_type=news",
+        "source": "Seeking Alpha",
+        "published": "2026-07-23T20:02:18-04:00",
+        "sentiment": "neutral"
+      },
+      {
+        "title": "Old Republic expects ECM to run at a 90%-95% combined ratio, as it flags a bargain purchase gain next quarter",
+        "link": "https://seekingalpha.com/news/4617865-old-republic-expects-ecm-to-run-at-a-90-percentminus-95-percent-combined-ratio-as-it-flags-a?utm_source=feed_news_all&utm_medium=referral&feed_item_type=news",
+        "source": "Seeking Alpha",
+        "published": "2026-07-23T20:02:18-04:00",
+        "sentiment": "bullish"
+      },
+      {
+        "title": "Knowles forecasts 10%-12% 2026 revenue growth as defense demand drives multiyear orders into 2027",
+        "link": "https://seekingalpha.com/news/4617863-knowles-forecasts-10-percentminus-12-percent-2026-revenue-growth-as-defense-demand-drives?utm_source=feed_news_all&utm_medium=referral&feed_item_type=news",
+        "source": "Seeking Alpha",
+        "published": "2026-07-23T20:02:11-04:00",
+        "sentiment": "neutral"
+      }
+    ]
+  },
+  "top_signals": [
+    {
+      "symbol": "BANKNIFTY",
+      "kind": "future",
+      "horizon": "swing",
+      "date": "2026-07-23 00:00:00+05:30",
+      "price": 56592.0,
+      "score": 37,
+      "bias": "Neutral",
+      "confidence": "low",
+      "component_scores": {
+        "sr": 5.0,
+        "gap": 25.0,
+        "momentum": 55.8,
+        "ma": 50.0,
+        "structure": 50.0,
+        "drivers": 42.0,
+        "oi": 50.0
+      },
+      "reasons": [
+        "Futures OI: neutral (neutral), basis premium (+0.14%)",
+        "Regime: range (ADX 14) \u2014 RSI read as mean-reversion",
+        "VIX rising (+3.9%) while price falls \u2014 conviction reduced",
+        "BRENT +7.1% (inverse corr -0.383) \u2014 bearish read",
+        "Price near support/resistance: bearish (5/100)",
+        "Unfilled gap positioning: bearish (25/100)"
+      ],
+      "levels": {
+        "pivot": 56632.3,
+        "support": 56549.4,
+        "resistance": 56594.25,
+        "r1": 56889.85,
+        "s1": 56334.45,
+        "atm_strike": null
+      },
+      "pcr": null,
+      "ma": {
+        "price": 56592.0,
+        "values": {
+          "20": 57746.9,
+          "50": 56228.29,
+          "100": 55895.0,
+          "200": 57403.04
+        },
+        "above": [
+          50,
+          100
+        ],
+        "below": [
+          20,
+          200
+        ],
+        "trend": "Downtrend bias \u2014 price below the 200-DMA"
+      },
+      "structure": "range/unclear structure",
+      "regime": "range",
+      "adx": 13.7,
+      "relationships": [
+        {
+          "name": "BRENT",
+          "prev_date": "2026-07-22 09:30:00+05:30",
+          "prev": 94.07,
+          "date": "2026-07-23 09:30:00+05:30",
+          "value": 100.75,
+          "change_pct": 7.1,
+          "corr_20d": -0.383,
+          "relationship": "inverse",
+          "implication": "bearish"
+        },
+        {
+          "name": "USDINR",
+          "prev_date": "2026-07-22 04:30:00+05:30",
+          "prev": 96.34,
+          "date": "2026-07-23 04:30:00+05:30",
+          "value": 96.56,
+          "change_pct": 0.22,
+          "corr_20d": -0.144,
+          "relationship": "inverse",
+          "implication": "neutral"
+        }
+      ],
+      "weights": {
+        "sr": 18,
+        "gap": 8,
+        "pcr": 14,
+        "momentum": 8,
+        "ma": 8,
+        "structure": 8,
+        "oi": 14,
+        "drivers": 14,
+        "vix": 8
+      },
+      "disclaimer": "Educational/informational only. Not SEBI-registered investment advice.",
+      "oi": {
+        "buildup": "neutral",
+        "implication": "neutral",
+        "oi": 1990950,
+        "oi_chg_pct": 0.0
+      },
+      "basis": {
+        "pct": 0.145,
+        "reading": "premium",
+        "future_price": 56673.8,
+        "spot_price": 56592
+      },
+      "trade_plan": null
+    },
+    {
+      "symbol": "NIFTY",
+      "kind": "future",
+      "horizon": "swing",
+      "date": "2026-07-23 00:00:00+05:30",
+      "price": 23869.6,
+      "score": 51,
+      "bias": "Neutral",
+      "confidence": "low",
+      "component_scores": {
+        "sr": 93.3,
+        "gap": 0.0,
+        "momentum": 54.6,
+        "ma": 25.0,
+        "structure": 50.0,
+        "drivers": 42.0,
+        "oi": 50.0
+      },
+      "reasons": [
+        "Futures OI: neutral (neutral), basis premium (+0.07%)",
+        "Regime: range (ADX 10) \u2014 RSI read as mean-reversion",
+        "VIX rising (+3.9%) while price falls \u2014 conviction reduced",
+        "BRENT +7.1% (inverse corr -0.372) \u2014 bearish read",
+        "Unfilled gap positioning: bearish (0/100)",
+        "Price near support/resistance: bullish (93/100)"
+      ],
+      "levels": {
+        "pivot": 23889.18,
+        "support": 23862.25,
+        "resistance": 23971.17,
+        "r1": 23971.17,
+        "s1": 23787.62,
+        "atm_strike": null
+      },
+      "pcr": null,
+      "ma": {
+        "price": 23869.6,
+        "values": {
+          "20": 24112.09,
+          "50": 23843.34,
+          "100": 23877.92,
+          "200": 24802.73
+        },
+        "above": [
+          50
+        ],
+        "below": [
+          20,
+          100,
+          200
+        ],
+        "trend": "Downtrend bias \u2014 price below the 200-DMA"
+      },
+      "structure": "range/unclear structure",
+      "regime": "range",
+      "adx": 10.1,
+      "relationships": [
+        {
+          "name": "BRENT",
+          "prev_date": "2026-07-22 09:30:00+05:30",
+          "prev": 94.07,
+          "date": "2026-07-23 09:30:00+05:30",
+          "value": 100.75,
+          "change_pct": 7.1,
+          "corr_20d": -0.372,
+          "relationship": "inverse",
+          "implication": "bearish"
+        },
+        {
+          "name": "USDINR",
+          "prev_date": "2026-07-22 04:30:00+05:30",
+          "prev": 96.34,
+          "date": "2026-07-23 04:30:00+05:30",
+          "value": 96.56,
+          "change_pct": 0.22,
+          "corr_20d": -0.13,
+          "relationship": "inverse",
+          "implication": "neutral"
+        }
+      ],
+      "weights": {
+        "sr": 18,
+        "gap": 8,
+        "pcr": 14,
+        "momentum": 8,
+        "ma": 8,
+        "structure": 8,
+        "oi": 14,
+        "drivers": 14,
+        "vix": 8
+      },
+      "disclaimer": "Educational/informational only. Not SEBI-registered investment advice.",
+      "oi": {
+        "buildup": "neutral",
+        "implication": "neutral",
+        "oi": 15020200,
+        "oi_chg_pct": 0.0
+      },
+      "basis": {
+        "pct": 0.069,
+        "reading": "premium",
+        "future_price": 23886,
+        "spot_price": 23869.6
+      },
+      "trade_plan": null
+    }
+  ],
+  "disclaimer": "Educational/informational only. Not SEBI-registered investment advice."
+}
